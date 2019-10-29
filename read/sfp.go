@@ -83,7 +83,7 @@ func getFileSize(inputFile string) int64 {
 }
 
 // PassSeekInOrder pass file one time with certain time of seek 
-func PassSeekInOrder(inputFile string, seekTime int, byteSize int64) {
+func PassSeekInOrder(inputFile string, seekTime int, byteSize int64, printReadBytes bool) {
 	log.Printf("parse in order seek [%d] times, and read [%d] each", seekTime, byteSize)
 	rd := OpenFile(inputFile)
 	fileSize := getFileSize(inputFile)
@@ -91,12 +91,19 @@ func PassSeekInOrder(inputFile string, seekTime int, byteSize int64) {
 	log.Printf("file size: [%d]", fileSize)
 	log.Printf("seekBlockSize: [%d]", seekBlockSize)
 
+	readTime := 0
+
 	for seekPos:=int64(0); seekPos < fileSize; {
 		// seek and read
 		b := make([]byte, byteSize)
 		rd.ReadAt(b, seekPos)
+		if printReadBytes {
+			log.Println("printing bytes:[" + string(b) + "]")
+		}
 		seekPos += seekBlockSize
+		readTime++
 	}
+	log.Printf("read [%d] times\n", readTime)
 }
 
 // RandSeek rand seek in file
