@@ -1,1 +1,1 @@
-"# annovar_index" 
+# annovar_index
