@@ -13,6 +13,7 @@ func main() {
 	inputFile := flag.String("in", "./data/hg19_dbnsfp35a_1m.txt", "input file")
 	chunkSize := flag.Int64("n", 1000, "chunk size for byte read")
 	seekTime := flag.Int("sn", 1, "total time for seek")
+	printReadBytes := flag.Bool("p", false, "print read bytes")
 	
 	flag.Parse()
 
@@ -24,7 +25,7 @@ func main() {
 	case "ph":
 		read.PrintHeader(*inputFile)
 	case "os":
-		read.PassSeekInOrder(*inputFile, *seekTime, *chunkSize)
+		read.PassSeekInOrder(*inputFile, *seekTime, *chunkSize, *printReadBytes)
 	case "rs":
 		read.RandSeek(*inputFile, *seekTime, *chunkSize)
 	default:
