@@ -12,7 +12,7 @@
 	// The optional 'runArgs' property can be used to specify additional runtime arguments.
 	"runArgs": [
 		// Uncomment the next line to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker for details.
-		"-v", "C:\\data\\annovar_index:/workspaces/annovar_index/data"
+		"-v", "C:\\data\\annovar_index:/go/src/github.com/anarkia7115/annovar_index/data"
 		// "-v","/var/run/docker.sock:/var/run/docker.sock",
 
 		// Uncomment the next line if you will be using a ptrace-based debugger like C++, Go, and Rust.
@@ -32,6 +32,8 @@
 		// uses the right one for terminals and tasks. For example, /bin/bash (or /bin/ash for Alpine).
 		"terminal.integrated.shell.linux": null
 	},
+	"workspaceMount": "src=${localWorkspaceFolder},dst=/go/src/github.com/anarkia7115/annovar_index,type=bind,consistency=delegated",
+	"workspaceFolder": "/go/src/github.com/anarkia7115/annovar_index",
 
 	// Uncomment the next line if you want to publish any ports.
 	// "appPort": [],
