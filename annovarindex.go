@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	taskHelperText := "task choose in rb, rl, os, rs, ph"
+	taskHelperText := "task choose in rb, rl, os, rs, ph, mos"
 	task := flag.String("task", "", taskHelperText)
 	inputFile := flag.String("in", "./data/hg19_dbnsfp35a_1m.txt", "input file")
 	chunkSize := flag.Int64("n", 1000, "chunk size for byte read")
@@ -28,6 +28,8 @@ func main() {
 		read.PassSeekInOrder(*inputFile, *seekTime, *chunkSize, *printReadBytes)
 	case "rs":
 		read.RandSeek(*inputFile, *seekTime, *chunkSize)
+	case "mos":
+		read.PassMmapSeekInOrder(*inputFile, *seekTime, *chunkSize, *printReadBytes)
 	default:
 		fmt.Printf("%s\nYou give [%s]\n", taskHelperText, *task)
 	}

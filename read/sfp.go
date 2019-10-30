@@ -6,7 +6,12 @@ import (
 	"io"
 	"log"
 	"os"
+	"golang.org/x/exp/mmap"
 )
+
+type fileSeeker interface {
+	ReadAt(b []byte, off int64) (n int, err error)
+} 
 
 // const inputFile string = "./data/hg19_dbnsfp35a_1m.txt"
 
@@ -20,6 +25,15 @@ func checkErr(err error) {
 func OpenFile(inputFile string) *os.File {
 	log.Printf("open [%s]\n", inputFile)
 	f, err := os.Open(inputFile)
+	checkErr(err)
+
+	return f
+}
+
+// OpenFileMmap open file use mmap
+func OpenFileMmap(inputFile string) *mmap.ReaderAt {
+	log.Printf("Opening [%s] with mmap", inputFile)
+	f, err := mmap.Open(inputFile)
 	checkErr(err)
 
 	return f
@@ -82,12 +96,16 @@ func getFileSize(inputFile string) int64 {
 	return fi.Size()
 }
 
-// PassSeekInOrder pass file one time with certain time of seek 
-func PassSeekInOrder(inputFile string, seekTime int, byteSize int64, printReadBytes bool) {
-	log.Printf("parse in order seek [%d] times, and read [%d] each", seekTime, byteSize)
-	rd := OpenFile(inputFile)
-	fileSize := getFileSize(inputFile)
-	seekBlockSize := fileSize / int64(seekTime)
+// SeekInOrder seek in order with fileSeeker
+func SeekInOrder(
+		rd fileSeeker, 
+		byteSize int64, 
+		seekBlockSize int64, 
+		fileSize int64, 
+		printReadBytes bool) {
+
+	log.Printf("ordered seek in file")
+
 	log.Printf("file size: [%d]", fileSize)
 	log.Printf("seekBlockSize: [%d]", seekBlockSize)
 
@@ -106,6 +124,17 @@ func PassSeekInOrder(inputFile string, seekTime int, byteSize int64, printReadBy
 	log.Printf("read [%d] times\n", readTime)
 }
 
+// PassSeekInOrder pass file one time with certain time of seek 
+func PassSeekInOrder(inputFile string, seekTime int, byteSize int64, printReadBytes bool) {
+	log.Printf("parse in order seek [%d] times, and read [%d] each", seekTime, byteSize)
+	rd := OpenFile(inputFile)
+	fileSize := getFileSize(inputFile)
+	seekBlockSize := fileSize / int64(seekTime)
+
+	SeekInOrder(rd, byteSize, seekBlockSize, fileSize, printReadBytes)
+
+}
+
 // RandSeek rand seek in file
 func RandSeek(inputFile string, seekTime int, byteSize int64) {
 	log.Printf("rand seek in [%s] with seekTime [%d]", inputFile, seekTime)
@@ -120,4 +149,17 @@ func RandSeek(inputFile string, seekTime int, byteSize int64) {
 		b := make([]byte, byteSize)
 		rd.ReadAt(b, seekPos)
 	}
+}
+
+// PassMmapSeekInOrder open file with mmap, 
+// pass one time with certain time of seek 
+func PassMmapSeekInOrder(inputFile string, seekTime int, byteSize int64, printReadBytes bool) {
+	log.Printf("parse in order seek [%d] times, and read [%d] each", seekTime, byteSize)
+	rd := OpenFileMmap(inputFile)
+
+	fileSize := getFileSize(inputFile)
+	seekBlockSize := fileSize / int64(seekTime)
+
+	SeekInOrder(rd, byteSize, seekBlockSize, fileSize, printReadBytes)
+	rd.Close()
 }
