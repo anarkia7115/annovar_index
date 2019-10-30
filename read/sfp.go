@@ -96,8 +96,8 @@ func getFileSize(inputFile string) int64 {
 	return fi.Size()
 }
 
-// SeekInOrder seek in order with fileSeeker
-func SeekInOrder(
+// SeekInOrderUtil seek in order with fileSeeker
+func SeekInOrderUtil(
 		rd fileSeeker, 
 		byteSize int64, 
 		seekBlockSize int64, 
@@ -125,23 +125,30 @@ func SeekInOrder(
 }
 
 // PassSeekInOrder pass file one time with certain time of seek 
-func PassSeekInOrder(inputFile string, seekTime int, byteSize int64, printReadBytes bool) {
+func PassSeekInOrder(
+		inputFile string, seekTime int, 
+		byteSize int64, printReadBytes bool, 
+		loop int) {
 	log.Printf("parse in order seek [%d] times, and read [%d] each", seekTime, byteSize)
 	rd := OpenFile(inputFile)
 	fileSize := getFileSize(inputFile)
 	seekBlockSize := fileSize / int64(seekTime)
 
-	SeekInOrder(rd, byteSize, seekBlockSize, fileSize, printReadBytes)
-
+	for i:=0; i < loop; i++ {
+		log.Printf("looping [%d]", i+1)
+		SeekInOrderUtil(rd, byteSize, seekBlockSize, fileSize, printReadBytes)
+	}
 }
 
-// RandSeek rand seek in file
-func RandSeek(inputFile string, seekTime int, byteSize int64) {
-	log.Printf("rand seek in [%s] with seekTime [%d]", inputFile, seekTime)
-	fileSize := getFileSize(inputFile)
+// RandSeekUtil random seek using fileSeeker
+func RandSeekUtil(
+		rd fileSeeker, 
+		byteSize int64, 
+		seekTime int, 
+		fileSize int64, 
+		) {
+	log.Printf("rand seek with seekTime [%d]", seekTime)
 	log.Printf("file size: [%d]", fileSize)
-
-	rd := OpenFile(inputFile)
 
 	for i:=0; i < seekTime; i++ {
 		// get rand num
@@ -151,15 +158,45 @@ func RandSeek(inputFile string, seekTime int, byteSize int64) {
 	}
 }
 
+// RandSeek rand seek in file
+func RandSeek(
+		inputFile string, seekTime int, 
+		byteSize int64, loop int) {
+	fileSize := getFileSize(inputFile)
+	rd := OpenFile(inputFile)
+
+	for i:=0; i < loop; i++ {
+		log.Printf("looping [%d]", i+1)
+		RandSeekUtil(rd, byteSize, seekTime, fileSize)
+	}
+}
+
 // PassMmapSeekInOrder open file with mmap, 
 // pass one time with certain time of seek 
-func PassMmapSeekInOrder(inputFile string, seekTime int, byteSize int64, printReadBytes bool) {
+func PassMmapSeekInOrder(
+		inputFile string, seekTime int, 
+		byteSize int64, printReadBytes bool, 
+		loop int) {
 	log.Printf("parse in order seek [%d] times, and read [%d] each", seekTime, byteSize)
 	rd := OpenFileMmap(inputFile)
-
 	fileSize := getFileSize(inputFile)
 	seekBlockSize := fileSize / int64(seekTime)
 
-	SeekInOrder(rd, byteSize, seekBlockSize, fileSize, printReadBytes)
+	for i:=0; i < loop; i++ {
+		log.Printf("looping [%d]", i+1)
+		SeekInOrderUtil(rd, byteSize, seekBlockSize, fileSize, printReadBytes)
+	}
 	rd.Close()
+}
+
+// RandMmapSeek Use mmap to rand seek
+func RandMmapSeek(
+		inputFile string, seekTime int, 
+		byteSize int64, loop int) {
+	fileSize := getFileSize(inputFile)
+	rd := OpenFileMmap(inputFile)
+	for i:=0; i < loop; i++ {
+		log.Printf("looping [%d]", i+1)
+		RandSeekUtil(rd, byteSize, seekTime, fileSize)
+	}
 }
